@@ -21,5 +21,22 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <script>
+      const fixImages = () => {
+        document.querySelectorAll('img').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && (src.startsWith('/assets/') || src.startsWith('assets/')) && !src.startsWith('./') && !src.startsWith('http')) {
+            const fileName = src.split('/').pop();
+            img.src = './assets/' + fileName;
+          }
+        });
+      };
+
+      const observer = new MutationObserver(fixImages);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      window.addEventListener('load', fixImages);
+    </script>
   </body>
 </html>
