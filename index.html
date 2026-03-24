@@ -1,1033 +1,266 @@
-( () => {
-    function a(a, e, i, r) {
-        Object.defineProperty(a, e, {
-            get: i,
-            set: r,
-            enumerable: !0,
-            configurable: !0
-        })
-    }
-    var e = "undefined" != typeof globalThis ? globalThis : "undefined" != typeof self ? self : "undefined" != typeof window ? window : "undefined" != typeof global ? global : {}
-      , i = {}
-      , r = {}
-      , t = e.parcelRequirebc80;
-    null == t && ((t = function(a) {
-        if (a in i)
-            return i[a].exports;
-        if (a in r) {
-            var e = r[a];
-            delete r[a];
-            var t = {
-                id: a,
-                exports: {}
-            };
-            return i[a] = t,
-            e.call(t.exports, t, t.exports),
-            t.exports
-        }
-        var n = new Error("Cannot find module '" + a + "'");
-        throw n.code = "MODULE_NOT_FOUND",
-        n
-    }
-    ).register = function(a, e) {
-        r[a] = e
-    }
-    ,
-    e.parcelRequirebc80 = t),
-    t.register("iM5Ye", (function(e, i) {
-        a(e.exports, "FCPThresholds", ( () => T)),
-        a(e.exports, "onFCP", ( () => M)),
-        a(e.exports, "CLSThresholds", ( () => E)),
-        a(e.exports, "onCLS", ( () => P)),
-        a(e.exports, "INPThresholds", ( () => N)),
-        a(e.exports, "onINP", ( () => K)),
-        a(e.exports, "LCPThresholds", ( () => D)),
-        a(e.exports, "onLCP", ( () => F)),
-        a(e.exports, "TTFBThresholds", ( () => O)),
-        a(e.exports, "onTTFB", ( () => H));
-        let r = -1;
-        const t = a => {
-            addEventListener("pageshow", (e => {
-                e.persisted && (r = e.timeStamp,
-                a(e))
-            }
-            ), !0)
-        }
-          , n = (a, e, i, r) => {
-            let t, n;
-            return o => {
-                e.value >= 0 && (o || r) && (n = e.value - (t ?? 0),
-                (n || void 0 === t) && (t = e.value,
-                e.delta = n,
-                e.rating = ( (a, e) => a > e[1] ? "poor" : a > e[0] ? "needs-improvement" : "good")(e.value, i),
-                a(e)))
-            }
-        }
-          , o = a => {
-            requestAnimationFrame(( () => requestAnimationFrame(( () => a()))))
-        }
-          , c = () => {
-            const a = performance.getEntriesByType("navigation")[0];
-            if (a && a.responseStart > 0 && a.responseStart < performance.now())
-                return a
-        }
-          , s = () => c()?.activationStart ?? 0
-          , A = (a, e=-1) => {
-            const i = c();
-            let t = "navigate";
-            return r >= 0 ? t = "back-forward-cache" : i && (document.prerendering || s() > 0 ? t = "prerender" : document.wasDiscarded ? t = "restore" : i.type && (t = i.type.replace(/_/g, "-"))),
-            {
-                name: a,
-                value: e,
-                rating: "good",
-                delta: 0,
-                entries: [],
-                id: `v5-${Date.now()}-${Math.floor(8999999999999 * Math.random()) + 1e12}`,
-                navigationType: t
-            }
-        }
-          , u = new WeakMap;
-        function l(a, e) {
-            return u.get(a) || u.set(a, new e),
-            u.get(a)
-        }
-        class m {
-            t;
-            i = 0;
-            o = [];
-            h(a) {
-                if (a.hadRecentInput)
-                    return;
-                const e = this.o[0]
-                  , i = this.o.at(-1);
-                this.i && e && i && a.startTime - i.startTime < 1e3 && a.startTime - e.startTime < 5e3 ? (this.i += a.value,
-                this.o.push(a)) : (this.i = a.value,
-                this.o = [a]),
-                this.t?.(a)
-            }
-        }
-        const d = (a, e, i={}) => {
-            try {
-                if (PerformanceObserver.supportedEntryTypes.includes(a)) {
-                    const r = new PerformanceObserver((a => {
-                        Promise.resolve().then(( () => {
-                            e(a.getEntries())
-                        }
-                        ))
-                    }
-                    ));
-                    return r.observe({
-                        type: a,
-                        buffered: !0,
-                        ...i
-                    }),
-                    r
-                }
-            } catch {}
-        }
-          , p = a => {
-            let e = !1;
-            return () => {
-                e || (a(),
-                e = !0)
-            }
-        }
-        ;
-        let g = -1;
-        const f = () => "hidden" !== document.visibilityState || document.prerendering ? 1 / 0 : 0
-          , h = a => {
-            "hidden" === document.visibilityState && g > -1 && (g = "visibilitychange" === a.type ? a.timeStamp : 0,
-            v())
-        }
-          , S = () => {
-            addEventListener("visibilitychange", h, !0),
-            addEventListener("prerenderingchange", h, !0)
-        }
-          , v = () => {
-            removeEventListener("visibilitychange", h, !0),
-            removeEventListener("prerenderingchange", h, !0)
-        }
-          , C = () => {
-            if (g < 0) {
-                const a = s()
-                  , e = document.prerendering ? void 0 : globalThis.performance.getEntriesByType("visibility-state").filter((e => "hidden" === e.name && e.startTime > a))[0]?.startTime;
-                g = e ?? f(),
-                S(),
-                t(( () => {
-                    setTimeout(( () => {
-                        g = f(),
-                        S()
-                    }
-                    ))
-                }
-                ))
-            }
-            return {
-                get firstHiddenTime() {
-                    return g
-                }
-            }
-        }
-          , y = a => {
-            document.prerendering ? addEventListener("prerenderingchange", ( () => a()), !0) : a()
-        }
-          , T = [1800, 3e3]
-          , M = (a, e={}) => {
-            y(( () => {
-                const i = C();
-                let r, c = A("FCP");
-                const u = d("paint", (a => {
-                    for (const e of a)
-                        "first-contentful-paint" === e.name && (u.disconnect(),
-                        e.startTime < i.firstHiddenTime && (c.value = Math.max(e.startTime - s(), 0),
-                        c.entries.push(e),
-                        r(!0)))
-                }
-                ));
-                u && (r = n(a, c, T, e.reportAllChanges),
-                t((i => {
-                    c = A("FCP"),
-                    r = n(a, c, T, e.reportAllChanges),
-                    o(( () => {
-                        c.value = performance.now() - i.timeStamp,
-                        r(!0)
-                    }
-                    ))
-                }
-                )))
-            }
-            ))
-        }
-          , E = [.1, .25]
-          , P = (a, e={}) => {
-            M(p(( () => {
-                let i, r = A("CLS", 0);
-                const c = l(e, m)
-                  , s = a => {
-                    for (const e of a)
-                        c.h(e);
-                    c.i > r.value && (r.value = c.i,
-                    r.entries = c.o,
-                    i())
-                }
-                  , u = d("layout-shift", s);
-                u && (i = n(a, r, E, e.reportAllChanges),
-                document.addEventListener("visibilitychange", ( () => {
-                    "hidden" === document.visibilityState && (s(u.takeRecords()),
-                    i(!0))
-                }
-                )),
-                t(( () => {
-                    c.i = 0,
-                    r = A("CLS", 0),
-                    i = n(a, r, E, e.reportAllChanges),
-                    o(( () => i()))
-                }
-                )),
-                setTimeout(i))
-            }
-            )))
-        }
-        ;
-        let b = 0
-          , R = 1 / 0
-          , U = 0;
-        const B = a => {
-            for (const e of a)
-                e.interactionId && (R = Math.min(R, e.interactionId),
-                U = Math.max(U, e.interactionId),
-                b = U ? (U - R) / 7 + 1 : 0)
-        }
-        ;
-        let k;
-        const _ = () => k ? b : performance.interactionCount ?? 0;
-        let w = 0;
-        class L {
-            u = [];
-            l = new Map;
-            m;
-            v;
-            p() {
-                w = _(),
-                this.u.length = 0,
-                this.l.clear()
-            }
-            P() {
-                const a = Math.min(this.u.length - 1, Math.floor((_() - w) / 50));
-                return this.u[a]
-            }
-            h(a) {
-                if (this.m?.(a),
-                !a.interactionId && "first-input" !== a.entryType)
-                    return;
-                const e = this.u.at(-1);
-                let i = this.l.get(a.interactionId);
-                if (i || this.u.length < 10 || a.duration > e.T) {
-                    if (i ? a.duration > i.T ? (i.entries = [a],
-                    i.T = a.duration) : a.duration === i.T && a.startTime === i.entries[0].startTime && i.entries.push(a) : (i = {
-                        id: a.interactionId,
-                        entries: [a],
-                        T: a.duration
-                    },
-                    this.l.set(i.id, i),
-                    this.u.push(i)),
-                    this.u.sort(( (a, e) => e.T - a.T)),
-                    this.u.length > 10) {
-                        const a = this.u.splice(10);
-                        for (const e of a)
-                            this.l.delete(e.id)
-                    }
-                    this.v?.(i)
-                }
-            }
-        }
-        const I = a => {
-            const e = globalThis.requestIdleCallback || setTimeout;
-            "hidden" === document.visibilityState ? a() : (a = p(a),
-            document.addEventListener("visibilitychange", a, {
-                once: !0
-            }),
-            e(( () => {
-                a(),
-                document.removeEventListener("visibilitychange", a)
-            }
-            )))
-        }
-          , N = [200, 500]
-          , K = (a, e={}) => {
-            globalThis.PerformanceEventTiming && "interactionId"in PerformanceEventTiming.prototype && y(( () => {
-                "interactionCount"in performance || k || (k = d("event", B, {
-                    type: "event",
-                    buffered: !0,
-                    durationThreshold: 0
-                }));
-                let i, r = A("INP");
-                const o = l(e, L)
-                  , c = a => {
-                    I(( () => {
-                        for (const e of a)
-                            o.h(e);
-                        const e = o.P();
-                        e && e.T !== r.value && (r.value = e.T,
-                        r.entries = e.entries,
-                        i())
-                    }
-                    ))
-                }
-                  , s = d("event", c, {
-                    durationThreshold: e.durationThreshold ?? 40
-                });
-                i = n(a, r, N, e.reportAllChanges),
-                s && (s.observe({
-                    type: "first-input",
-                    buffered: !0
-                }),
-                document.addEventListener("visibilitychange", ( () => {
-                    "hidden" === document.visibilityState && (c(s.takeRecords()),
-                    i(!0))
-                }
-                )),
-                t(( () => {
-                    o.p(),
-                    r = A("INP"),
-                    i = n(a, r, N, e.reportAllChanges)
-                }
-                )))
-            }
-            ))
-        }
-        ;
-        class G {
-            m;
-            h(a) {
-                this.m?.(a)
-            }
-        }
-        const D = [2500, 4e3]
-          , F = (a, e={}) => {
-            y(( () => {
-                const i = C();
-                let r, c = A("LCP");
-                const u = l(e, G)
-                  , m = a => {
-                    e.reportAllChanges || (a = a.slice(-1));
-                    for (const e of a)
-                        u.h(e),
-                        e.startTime < i.firstHiddenTime && (c.value = Math.max(e.startTime - s(), 0),
-                        c.entries = [e],
-                        r())
-                }
-                  , g = d("largest-contentful-paint", m);
-                if (g) {
-                    r = n(a, c, D, e.reportAllChanges);
-                    const i = p(( () => {
-                        m(g.takeRecords()),
-                        g.disconnect(),
-                        r(!0)
-                    }
-                    ));
-                    for (const a of ["keydown", "click", "visibilitychange"])
-                        addEventListener(a, ( () => I(i)), {
-                            capture: !0,
-                            once: !0
-                        });
-                    t((i => {
-                        c = A("LCP"),
-                        r = n(a, c, D, e.reportAllChanges),
-                        o(( () => {
-                            c.value = performance.now() - i.timeStamp,
-                            r(!0)
-                        }
-                        ))
-                    }
-                    ))
-                }
-            }
-            ))
-        }
-          , O = [800, 1800]
-          , x = a => {
-            document.prerendering ? y(( () => x(a))) : "complete" !== document.readyState ? addEventListener("load", ( () => x(a)), !0) : setTimeout(a)
-        }
-          , H = (a, e={}) => {
-            let i = A("TTFB")
-              , r = n(a, i, O, e.reportAllChanges);
-            x(( () => {
-                const o = c();
-                o && (i.value = Math.max(o.responseStart - s(), 0),
-                i.entries = [o],
-                r(!0),
-                t(( () => {
-                    i = A("TTFB", 0),
-                    r = n(a, i, O, e.reportAllChanges),
-                    r(!0)
-                }
-                )))
-            }
-            ))
-        }
-    }
-    )),
-    function() {
-        const a = {
-            "Asia/Barnaul": "RU",
-            "Africa/Nouakchott": "MR",
-            "Africa/Lusaka": "ZM",
-            "Asia/Pyongyang": "KP",
-            "Europe/Bratislava": "SK",
-            "America/Belize": "BZ",
-            "America/Maceio": "BR",
-            "Pacific/Chuuk": "FM",
-            "Indian/Comoro": "KM",
-            "Pacific/Palau": "PW",
-            "Asia/Jakarta": "ID",
-            "Africa/Windhoek": "NA",
-            "America/Chihuahua": "MX",
-            "America/Nome": "US",
-            "Africa/Mbabane": "SZ",
-            "Africa/Porto-Novo": "BJ",
-            "Europe/San_Marino": "SM",
-            "Pacific/Fakaofo": "TK",
-            "America/Denver": "US",
-            "Europe/Belgrade": "RS",
-            "America/Indiana/Tell_City": "US",
-            "America/Fortaleza": "BR",
-            "America/Halifax": "CA",
-            "Europe/Bucharest": "RO",
-            "America/Indiana/Petersburg": "US",
-            "Europe/Kirov": "RU",
-            "Europe/Athens": "GR",
-            "America/Argentina/Ushuaia": "AR",
-            "Europe/Monaco": "MC",
-            "Europe/Vilnius": "LT",
-            "Europe/Copenhagen": "DK",
-            "Pacific/Kanton": "KI",
-            "America/Caracas": "VE",
-            "Asia/Almaty": "KZ",
-            "Europe/Paris": "FR",
-            "Africa/Blantyre": "MW",
-            "Asia/Muscat": "OM",
-            "America/North_Dakota/Beulah": "US",
-            "America/Matamoros": "MX",
-            "Asia/Irkutsk": "RU",
-            "America/Costa_Rica": "CR",
-            "America/Araguaina": "BR",
-            "Atlantic/Canary": "ES",
-            "America/Santo_Domingo": "DO",
-            "America/Vancouver": "CA",
-            "Africa/Addis_Ababa": "ET",
-            "Africa/Accra": "GH",
-            "Pacific/Kwajalein": "MH",
-            "Asia/Baghdad": "IQ",
-            "Australia/Adelaide": "AU",
-            "Australia/Hobart": "AU",
-            "America/Guayaquil": "EC",
-            "America/Argentina/Tucuman": "AR",
-            "Australia/Lindeman": "AU",
-            "America/New_York": "US",
-            "Pacific/Fiji": "FJ",
-            "America/Antigua": "AG",
-            "Africa/Casablanca": "MA",
-            "America/Paramaribo": "SR",
-            "Africa/Cairo": "EG",
-            "America/Cayenne": "GF",
-            "America/Detroit": "US",
-            "Antarctica/Syowa": "AQ",
-            "Africa/Douala": "CM",
-            "America/Argentina/La_Rioja": "AR",
-            "Africa/Lagos": "NG",
-            "America/St_Barthelemy": "BL",
-            "Asia/Nicosia": "CY",
-            "Asia/Macau": "MO",
-            "Europe/Riga": "LV",
-            "Asia/Ashgabat": "TM",
-            "Indian/Antananarivo": "MG",
-            "America/Argentina/San_Juan": "AR",
-            "Asia/Aden": "YE",
-            "Asia/Tomsk": "RU",
-            "America/Asuncion": "PY",
-            "Pacific/Bougainville": "PG",
-            "Asia/Vientiane": "LA",
-            "America/Mazatlan": "MX",
-            "Africa/Luanda": "AO",
-            "Europe/Oslo": "NO",
-            "Africa/Kinshasa": "CD",
-            "Europe/Warsaw": "PL",
-            "America/Grand_Turk": "TC",
-            "Asia/Seoul": "KR",
-            "Africa/Tripoli": "LY",
-            "America/St_Thomas": "VI",
-            "Asia/Kathmandu": "NP",
-            "Pacific/Pitcairn": "PN",
-            "Pacific/Nauru": "NR",
-            "America/Curacao": "CW",
-            "Asia/Kabul": "AF",
-            "Pacific/Tongatapu": "TO",
-            "Europe/Simferopol": "UA",
-            "Asia/Ust-Nera": "RU",
-            "Africa/Mogadishu": "SO",
-            "Indian/Mayotte": "YT",
-            "Pacific/Niue": "NU",
-            "America/Thunder_Bay": "CA",
-            "Atlantic/Azores": "PT",
-            "Pacific/Gambier": "PF",
-            "Europe/Stockholm": "SE",
-            "Africa/Libreville": "GA",
-            "America/Punta_Arenas": "CL",
-            "America/Guatemala": "GT",
-            "America/Noronha": "BR",
-            "Europe/Helsinki": "FI",
-            "Asia/Gaza": "PS",
-            "Pacific/Kosrae": "FM",
-            "America/Aruba": "AW",
-            "America/Nassau": "BS",
-            "Asia/Choibalsan": "MN",
-            "America/Winnipeg": "CA",
-            "America/Anguilla": "AI",
-            "Asia/Thimphu": "BT",
-            "Asia/Beirut": "LB",
-            "Atlantic/Faroe": "FO",
-            "Europe/Berlin": "DE",
-            "Europe/Amsterdam": "NL",
-            "Pacific/Honolulu": "US",
-            "America/Regina": "CA",
-            "America/Scoresbysund": "GL",
-            "Europe/Vienna": "AT",
-            "Europe/Tirane": "AL",
-            "Africa/El_Aaiun": "EH",
-            "America/Creston": "CA",
-            "Asia/Qostanay": "KZ",
-            "Asia/Ho_Chi_Minh": "VN",
-            "Europe/Samara": "RU",
-            "Europe/Rome": "IT",
-            "Australia/Eucla": "AU",
-            "America/El_Salvador": "SV",
-            "America/Chicago": "US",
-            "Africa/Abidjan": "CI",
-            "Asia/Kamchatka": "RU",
-            "Pacific/Tarawa": "KI",
-            "America/Santiago": "CL",
-            "America/Bahia": "BR",
-            "Indian/Christmas": "CX",
-            "Asia/Atyrau": "KZ",
-            "Asia/Dushanbe": "TJ",
-            "Europe/Ulyanovsk": "RU",
-            "America/Yellowknife": "CA",
-            "America/Recife": "BR",
-            "Australia/Sydney": "AU",
-            "America/Fort_Nelson": "CA",
-            "Pacific/Efate": "VU",
-            "Europe/Saratov": "RU",
-            "Africa/Banjul": "GM",
-            "Asia/Omsk": "RU",
-            "Europe/Ljubljana": "SI",
-            "Europe/Budapest": "HU",
-            "Europe/Astrakhan": "RU",
-            "America/Argentina/Buenos_Aires": "AR",
-            "Pacific/Chatham": "NZ",
-            "America/Argentina/Salta": "AR",
-            "Africa/Niamey": "NE",
-            "Asia/Pontianak": "ID",
-            "Indian/Reunion": "RE",
-            "Asia/Hong_Kong": "HK",
-            "Antarctica/McMurdo": "AQ",
-            "Africa/Malabo": "GQ",
-            "America/Los_Angeles": "US",
-            "America/Argentina/Cordoba": "AR",
-            "Pacific/Pohnpei": "FM",
-            "America/Tijuana": "MX",
-            "America/Campo_Grande": "BR",
-            "America/Dawson_Creek": "CA",
-            "Asia/Novosibirsk": "RU",
-            "Pacific/Pago_Pago": "AS",
-            "Asia/Jerusalem": "IL",
-            "Europe/Sarajevo": "BA",
-            "Africa/Freetown": "SL",
-            "Asia/Yekaterinburg": "RU",
-            "America/Juneau": "US",
-            "Africa/Ouagadougou": "BF",
-            "Africa/Monrovia": "LR",
-            "Europe/Kiev": "UA",
-            "America/Argentina/San_Luis": "AR",
-            "Asia/Tokyo": "JP",
-            "Asia/Qatar": "QA",
-            "America/La_Paz": "BO",
-            "America/Bogota": "CO",
-            "America/Thule": "GL",
-            "Asia/Manila": "PH",
-            "Asia/Hovd": "MN",
-            "Asia/Tehran": "IR",
-            "Atlantic/Madeira": "PT",
-            "America/Metlakatla": "US",
-            "Europe/Vatican": "VA",
-            "Asia/Bishkek": "KG",
-            "Asia/Dili": "TL",
-            "Antarctica/Palmer": "AQ",
-            "Atlantic/Cape_Verde": "CV",
-            "Indian/Chagos": "IO",
-            "America/Kentucky/Monticello": "US",
-            "Africa/Algiers": "DZ",
-            "Africa/Maseru": "LS",
-            "Asia/Kuala_Lumpur": "MY",
-            "Africa/Khartoum": "SD",
-            "America/Argentina/Rio_Gallegos": "AR",
-            "America/Blanc-Sablon": "CA",
-            "Africa/Maputo": "MZ",
-            "America/Tortola": "VG",
-            "Atlantic/Bermuda": "BM",
-            "America/Argentina/Catamarca": "AR",
-            "America/Cayman": "KY",
-            "America/Puerto_Rico": "PR",
-            "Pacific/Majuro": "MH",
-            "Europe/Busingen": "DE",
-            "Pacific/Midway": "UM",
-            "Indian/Cocos": "CC",
-            "Asia/Singapore": "SG",
-            "America/Boise": "US",
-            "America/Nuuk": "GL",
-            "America/Goose_Bay": "CA",
-            "Australia/Broken_Hill": "AU",
-            "Africa/Dar_es_Salaam": "TZ",
-            "Africa/Asmara": "ER",
-            "Asia/Samarkand": "UZ",
-            "Asia/Tbilisi": "GE",
-            "America/Argentina/Jujuy": "AR",
-            "America/Indiana/Winamac": "US",
-            "America/Porto_Velho": "BR",
-            "Asia/Magadan": "RU",
-            "Europe/Zaporozhye": "UA",
-            "Antarctica/Casey": "AQ",
-            "Asia/Shanghai": "CN",
-            "Pacific/Norfolk": "NF",
-            "Europe/Guernsey": "GG",
-            "Australia/Brisbane": "AU",
-            "Antarctica/DumontDUrville": "AQ",
-            "America/Havana": "CU",
-            "America/Atikokan": "CA",
-            "America/Mexico_City": "MX",
-            "America/Rankin_Inlet": "CA",
-            "America/Cuiaba": "BR",
-            "America/Resolute": "CA",
-            "Africa/Ceuta": "ES",
-            "Arctic/Longyearbyen": "SJ",
-            "Pacific/Guam": "GU",
-            "Asia/Damascus": "SY",
-            "Asia/Colombo": "LK",
-            "Asia/Yerevan": "AM",
-            "America/Montserrat": "MS",
-            "America/Belem": "BR",
-            "Europe/Kaliningrad": "RU",
-            "Atlantic/South_Georgia": "GS",
-            "Asia/Tashkent": "UZ",
-            "Asia/Kolkata": "IN",
-            "America/St_Johns": "CA",
-            "Asia/Srednekolymsk": "RU",
-            "Asia/Yakutsk": "RU",
-            "Europe/Prague": "CZ",
-            "Africa/Djibouti": "DJ",
-            "Asia/Dubai": "AE",
-            "Europe/Uzhgorod": "UA",
-            "America/Edmonton": "CA",
-            "Asia/Famagusta": "CY",
-            "America/Indiana/Knox": "US",
-            "Asia/Hebron": "PS",
-            "Asia/Taipei": "TW",
-            "Europe/London": "GB",
-            "Africa/Dakar": "SN",
-            "Australia/Darwin": "AU",
-            "America/Glace_Bay": "CA",
-            "Antarctica/Vostok": "AQ",
-            "America/Indiana/Vincennes": "US",
-            "America/Nipigon": "CA",
-            "Asia/Kuwait": "KW",
-            "Pacific/Guadalcanal": "SB",
-            "America/Toronto": "CA",
-            "Africa/Gaborone": "BW",
-            "Africa/Bujumbura": "BI",
-            "Africa/Lubumbashi": "CD",
-            "America/Merida": "MX",
-            "America/Marigot": "MF",
-            "Europe/Zagreb": "HR",
-            "Pacific/Easter": "CL",
-            "America/Santarem": "BR",
-            "Pacific/Noumea": "NC",
-            "America/Sitka": "US",
-            "Atlantic/Stanley": "FK",
-            "Pacific/Funafuti": "TV",
-            "America/Iqaluit": "CA",
-            "America/Rainy_River": "CA",
-            "America/Anchorage": "US",
-            "America/Lima": "PE",
-            "Asia/Baku": "AZ",
-            "America/Indiana/Vevay": "US",
-            "Asia/Ulaanbaatar": "MN",
-            "America/Managua": "NI",
-            "Asia/Krasnoyarsk": "RU",
-            "Asia/Qyzylorda": "KZ",
-            "America/Eirunepe": "BR",
-            "Europe/Podgorica": "ME",
-            "Europe/Chisinau": "MD",
-            "Europe/Mariehamn": "AX",
-            "Europe/Volgograd": "RU",
-            "Africa/Nairobi": "KE",
-            "Europe/Isle_of_Man": "IM",
-            "America/Menominee": "US",
-            "Africa/Harare": "ZW",
-            "Asia/Anadyr": "RU",
-            "America/Moncton": "CA",
-            "Indian/Maldives": "MV",
-            "America/Whitehorse": "CA",
-            "Antarctica/Mawson": "AQ",
-            "Europe/Madrid": "ES",
-            "America/Argentina/Mendoza": "AR",
-            "America/Manaus": "BR",
-            "Africa/Bangui": "CF",
-            "Indian/Mauritius": "MU",
-            "Africa/Tunis": "TN",
-            "Australia/Lord_Howe": "AU",
-            "America/Kentucky/Louisville": "US",
-            "America/North_Dakota/Center": "US",
-            "Asia/Novokuznetsk": "RU",
-            "Asia/Makassar": "ID",
-            "America/Port_of_Spain": "TT",
-            "America/Bahia_Banderas": "MX",
-            "Pacific/Auckland": "NZ",
-            "America/Sao_Paulo": "BR",
-            "Asia/Dhaka": "BD",
-            "America/Pangnirtung": "CA",
-            "Europe/Dublin": "IE",
-            "Asia/Brunei": "BN",
-            "Africa/Brazzaville": "CG",
-            "America/Montevideo": "UY",
-            "America/Jamaica": "JM",
-            "America/Indiana/Indianapolis": "US",
-            "America/Kralendijk": "BQ",
-            "Europe/Gibraltar": "GI",
-            "Pacific/Marquesas": "PF",
-            "Pacific/Apia": "WS",
-            "Europe/Jersey": "JE",
-            "America/Phoenix": "US",
-            "Africa/Ndjamena": "TD",
-            "Asia/Karachi": "PK",
-            "Africa/Kampala": "UG",
-            "Asia/Sakhalin": "RU",
-            "America/Martinique": "MQ",
-            "Europe/Moscow": "RU",
-            "Africa/Conakry": "GN",
-            "America/Barbados": "BB",
-            "Africa/Lome": "TG",
-            "America/Ojinaga": "MX",
-            "America/Tegucigalpa": "HN",
-            "Asia/Bangkok": "TH",
-            "Africa/Johannesburg": "ZA",
-            "Europe/Vaduz": "LI",
-            "Africa/Sao_Tome": "ST",
-            "America/Cambridge_Bay": "CA",
-            "America/Lower_Princes": "SX",
-            "America/Miquelon": "PM",
-            "America/St_Kitts": "KN",
-            "Australia/Melbourne": "AU",
-            "Europe/Minsk": "BY",
-            "Asia/Vladivostok": "RU",
-            "Europe/Sofia": "BG",
-            "Antarctica/Davis": "AQ",
-            "Pacific/Galapagos": "EC",
-            "America/North_Dakota/New_Salem": "US",
-            "Asia/Amman": "JO",
-            "Pacific/Wallis": "WF",
-            "America/Hermosillo": "MX",
-            "Pacific/Kiritimati": "KI",
-            "Antarctica/Macquarie": "AU",
-            "America/Guyana": "GY",
-            "Asia/Riyadh": "SA",
-            "Pacific/Tahiti": "PF",
-            "America/St_Vincent": "VC",
-            "America/Cancun": "MX",
-            "America/Grenada": "GD",
-            "Pacific/Wake": "UM",
-            "America/Dawson": "CA",
-            "Europe/Brussels": "BE",
-            "Indian/Kerguelen": "TF",
-            "America/Yakutat": "US",
-            "Indian/Mahe": "SC",
-            "Atlantic/Reykjavik": "IS",
-            "America/Panama": "PA",
-            "America/Guadeloupe": "GP",
-            "Europe/Malta": "MT",
-            "Antarctica/Troll": "AQ",
-            "Asia/Jayapura": "ID",
-            "Asia/Bahrain": "BH",
-            "Asia/Chita": "RU",
-            "Europe/Tallinn": "EE",
-            "Asia/Khandyga": "RU",
-            "America/Rio_Branco": "BR",
-            "Atlantic/St_Helena": "SH",
-            "Africa/Juba": "SS",
-            "America/Adak": "US",
-            "Pacific/Saipan": "MP",
-            "America/St_Lucia": "LC",
-            "America/Inuvik": "CA",
-            "Europe/Luxembourg": "LU",
-            "Africa/Bissau": "GW",
-            "Asia/Oral": "KZ",
-            "America/Boa_Vista": "BR",
-            "Europe/Skopje": "MK",
-            "America/Port-au-Prince": "HT",
-            "Pacific/Port_Moresby": "PG",
-            "Europe/Andorra": "AD",
-            "America/Indiana/Marengo": "US",
-            "Africa/Kigali": "RW",
-            "Africa/Bamako": "ML",
-            "America/Dominica": "DM",
-            "Asia/Aqtobe": "KZ",
-            "Europe/Istanbul": "TR",
-            "Pacific/Rarotonga": "CK",
-            "America/Danmarkshavn": "GL",
-            "Europe/Zurich": "CH",
-            "Asia/Yangon": "MM",
-            "America/Monterrey": "MX",
-            "Europe/Lisbon": "PT",
-            "Asia/Kuching": "MY",
-            "Antarctica/Rothera": "AQ",
-            "Australia/Perth": "AU",
-            "Asia/Phnom_Penh": "KH",
-            "America/Swift_Current": "CA",
-            "Asia/Aqtau": "KZ",
-            "Asia/Urumqi": "CN",
-            "Asia/Calcutta": "IN"
-        }
-          , e = "session-id";
-        let i = "analytics_events";
-        const r = {
-            cookie: "cookie",
-            localStorage: "localStorage",
-            sessionStorage: "sessionStorage"
-        };
-        let n, o, c, s, A, u = r.cookie, l = {}, m = !0;
-        if (document.currentScript) {
-            if (s = document.currentScript.getAttribute("data-host"),
-            n = document.currentScript.getAttribute("data-proxy"),
-            o = document.currentScript.getAttribute("data-proxy-url"),
-            c = document.currentScript.getAttribute("data-token"),
-            A = document.currentScript.getAttribute("data-domain"),
-            n && o)
-                throw console.error("Error: Both data-proxy and data-proxy-url are specified. Please use only one of them."),
-                new Error("Both data-proxy and data-proxy-url are specified. Please use only one of them.");
-            i = document.currentScript.getAttribute("data-datasource") || i,
-            u = document.currentScript.getAttribute("data-storage") || u,
-            m = "false" !== document.currentScript.getAttribute("data-stringify-payload");
-            for (const E of document.currentScript.attributes)
-                E.name.startsWith("tb_") && (l[E.name.slice(3).replace(/-/g, "_")] = E.value),
-                E.name.startsWith("data-tb-") && (l[E.name.slice(8).replace(/-/g, "_")] = E.value)
-        }
-        var d = null;
-        function p() {
-            return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (a => (a ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> a / 4).toString(16)))
-        }
-        function g() {
-            if ([r.localStorage, r.sessionStorage].includes(u)) {
-                const a = u === r.localStorage ? localStorage : sessionStorage
-                  , i = a.getItem(e);
-                if (!i)
-                    return null;
-                let t = null;
-                try {
-                    t = JSON.parse(i)
-                } catch (a) {
-                    return null
-                }
-                if ("object" != typeof t || null === t)
-                    return null;
-                return (new Date).getTime() > t.expiry ? (a.removeItem(e),
-                null) : t.value
-            }
-            return function() {
-                let a = {};
-                return document.cookie.split(";").forEach((function(e) {
-                    let[i,r] = e.split("=");
-                    a[i.trim()] = r
-                }
-                )),
-                a[e]
-            }()
-        }
-        function f() {
-            const a = g() || p();
-            if ([r.localStorage, r.sessionStorage].includes(u)) {
-                const i = {
-                    value: a,
-                    expiry: (new Date).getTime() + 18e5
-                }
-                  , t = JSON.stringify(i)
-                  , n = u === r.localStorage ? localStorage : sessionStorage;
-                return u === n.setItem(e, t)
-            }
-            return function(a) {
-                let e = `session-id=${a}; Max-Age=1800; path=/; secure`;
-                A && (e += `; domain=${A}`),
-                document.cookie = e
-            }(a)
-        }
-        function h(a) {
-            return !(!a || "string" != typeof a) && !(a.length < 2 || a.length > 10240)
-        }
-        !document.currentScript || "true" !== document.currentScript.getAttribute("web-vitals") && "true" !== document.currentScript.getAttribute("data-web-vitals") || (d = t("iM5Ye"));
-        const S = a => {
-            let e = JSON.stringify(a);
-            return ["username", "user", "user_id", "userid", "password", "pass", "pin", "passcode", "token", "api_token", "email", "address", "phone", "sex", "gender", "order", "order_id", "orderid", "payment", "credit_card"].forEach((a => {
-                e = e.replaceAll(new RegExp(`("${a}"):(".+?"|\\d+)`,"mgi"), '$1:"********"')
-            }
-            )),
-            e
-        }
-        ;
-        async function v(a, e) {
-            if (f(),
-            (r = window.navigator.userAgent) && "string" == typeof r && r.length > 500)
-                return;
-            var r;
-            let t, A;
-            if (o ? t = o : n ? t = `${n}/api/tracking` : s ? (s = s.replaceAll(/\/+$/gm, ""),
-            t = `${s}/v0/events?name=${i}&token=${c}`) : t = `https://api.tinybird.co/v0/events?name=${i}&token=${c}`,
-            m) {
-                if (A = S(e),
-                A = Object.assign({}, JSON.parse(A), l),
-                A = JSON.stringify(A),
-                !h(A))
-                    return
-            } else {
-                A = Object.assign({}, e, l);
-                const a = S(A);
-                if (!h(a))
-                    return;
-                A = JSON.parse(a)
-            }
-            const u = g() || p()
-              , d = new XMLHttpRequest;
-            d.open("POST", t, !0),
-            d.setRequestHeader("Content-Type", "application/json"),
-            d.send(JSON.stringify({
-                timestamp: (new Date).toISOString(),
-                action: a,
-                version: "1",
-                session_id: u,
-                payload: A
-            }))
-        }
-        function C() {
-            let e, i;
-            try {
-                const r = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                e = a[r],
-                i = navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || "en"
-            } catch (a) {}
-            return {
-                country: e,
-                locale: i
-            }
-        }
-        function y() {
-            if (window.__nightmare || window.navigator.webdriver || window.Cypress)
-                return;
-            const {country: a, locale: e} = C();
-            setTimeout(( () => {
-                v("page_hit", {
-                    "user-agent": window.navigator.userAgent,
-                    locale: e,
-                    location: a,
-                    referrer: document.referrer,
-                    pathname: window.location.pathname,
-                    href: window.location.href
-                })
-            }
-            ), 300)
-        }
-        if (d) {
-            function T(a) {
-                try {
-                    const {country: e, locale: i} = C();
-                    v("web_vital", {
-                        name: a.name,
-                        value: a.value,
-                        delta: a.delta,
-                        rating: a.rating,
-                        id: a.id,
-                        navigationType: a.navigationType,
-                        pathname: window.location.pathname,
-                        href: window.location.href,
-                        "user-agent": window.navigator.userAgent,
-                        locale: i,
-                        location: e,
-                        referrer: document.referrer
-                    })
-                } catch (a) {
-                    console.error("Error sending web vital:", a)
-                }
-            }
-            d.onCLS && d.onCLS(T),
-            d.onFCP && d.onFCP(T),
-            d.onLCP && d.onLCP(T),
-            d.onTTFB && d.onTTFB(T),
-            d.onINP && d.onINP(T)
-        }
-        window.Tinybird = {
-            trackEvent: v
-        },
-        window.addEventListener("hashchange", y);
-        const M = window.history;
-        if (M.pushState) {
-            const P = M.pushState;
-            M.pushState = function() {
-                P.apply(this, arguments),
-                y()
-            }
-            ,
-            window.addEventListener("popstate", y)
-        }
-        "prerender" === document.visibilityState ? document.addEventListener("visibilitychange", (function() {
-            "visible" === document.visibilityState && y()
-        }
-        )) : y()
-    }()
-}
-)();
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CDC UFC — Clube de Prêmios | Campanha de Incentivo</title>
+    <meta name="description" content="Participe do Clube de Prêmios CDC UFC. Venda, acumule Moedas Vivas e resgate prêmios incríveis como TV, geladeira, smartphone e muito mais!">
+    <meta name="author" content="CDC UFC" />
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/61737e83-f51d-4050-8624-d5ba124e2e81/id-preview-e301177f--7ab6c549-13d8-4b51-852a-88803690c4ef.lovable.app-1774293211453.png">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@cdcufc" />
+    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/61737e83-f51d-4050-8624-d5ba124e2e81/id-preview-e301177f--7ab6c549-13d8-4b51-852a-88803690c4ef.lovable.app-1774293211453.png">
+    <meta property="og:title" content="CDC UFC — Clube de Prêmios | Campanha de Incentivo">
+  <meta name="twitter:title" content="CDC UFC — Clube de Prêmios | Campanha de Incentivo">
+  <meta property="og:description" content="Participe do Clube de Prêmios CDC UFC. Venda, acumule Moedas Vivas e resgate prêmios incríveis como TV, geladeira, smartphone e muito mais!">
+  <meta name="twitter:description" content="Participe do Clube de Prêmios CDC UFC. Venda, acumule Moedas Vivas e resgate prêmios incríveis como TV, geladeira, smartphone e muito mais!">
+  <script type="module" crossorigin src="/assets/index-CJzbB0nz.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-FflR333n.css">
+
+<style>
+	@font-face {
+		font-family: 'CameraPlainVariable';
+		src: url('https://cdn.gpteng.co/mcp-widgets/v1/fonts/CameraPlainVariable.woff2') format('woff2');
+		font-weight: 100 900;
+		font-style: normal;
+		font-display: swap;
+	}
+
+	#lovable-badge {
+		--badge-bg: #1b1b1b;
+		--badge-text: #c5c1b9;
+		--badge-text-hover: #dcdad5;
+		--badge-radius: 6px;
+		--badge-padding: 8px;
+		--badge-gap: 6px;
+		--badge-shadow: 
+			0 0 0 1px rgba(0, 0, 0, 0.88),
+			0 1px 0 0 rgba(0, 0, 0, 0.04),
+			0 2px 2px -1px rgba(0, 0, 0, 0.08),
+			0 4px 4px -2px rgba(0, 0, 0, 0.08),
+			0 8px 8px -4px rgba(0, 0, 0, 0.08),
+			0 16px 16px -8px rgba(0, 0, 0, 0.08);
+		--badge-transition-duration: 0.2s;
+		--badge-transition-easing: cubic-bezier(0.16, 1, 0.32, 1);
+		--focus-color: #575ECF;
+		--focus-offset: 2px;
+		--focus-width: 2px;
+		
+		position: fixed;
+		bottom: 12px;
+		right: 12px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		z-index: 1000000;
+		background-color: var(--badge-bg);
+		color: var(--badge-text);
+		border-radius: var(--badge-radius);
+		box-shadow: var(--badge-shadow);
+		font-size: 12px;
+		font-family: CameraPlainVariable, "CameraPlainVariable Fallback", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-weight: 400 !important;
+		text-transform: none !important;
+		font-feature-settings: normal !important;
+		transform: translateZ(0);
+		will-change: transform, opacity;
+	}
+
+	#lovable-badge-cta {
+		display: flex;
+		align-items: center;
+		gap: var(--badge-gap);
+		padding: 0 var(--badge-padding);
+		height: 100%;
+		color: inherit;
+		text-decoration: none;
+		white-space: nowrap;
+		border-radius: var(--badge-radius) 0 0 var(--badge-radius);
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
+
+	#lovable-badge-cta:hover {
+		background: rgba(255, 255, 255, 0.04);
+		color: var(--badge-text-hover);
+	}
+
+	#lovable-badge-cta:active {
+		transform: scale(0.98);
+	}
+
+	#lovable-badge-cta:focus {
+		outline: none;
+	}
+
+	#lovable-badge-cta:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: var(--focus-offset);
+		z-index: 1;
+	}
+
+	#lovable-badge-text {
+		line-height: 1;
+	}
+
+	#lovable-badge-divider {
+		width: 1px;
+		height: 24px;
+		background-color: rgba(255, 255, 255, 0.04);
+		flex-shrink: 0;
+	}
+
+	#lovable-badge-close {
+		width: 24px;
+		height: 24px;
+		min-width: 24px;
+		min-height: 24px;
+		cursor: pointer;
+		background: none;
+		border: none;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0 var(--badge-radius) var(--badge-radius) 0;
+		flex-shrink: 0;
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
+
+	#lovable-badge-close:hover {
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	#lovable-badge-close:active {
+		transform: scale(0.92);
+	}
+
+	#lovable-badge-close:focus {
+		outline: none;
+	}
+
+	#lovable-badge-close:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: calc(var(--focus-offset) * -1);
+		z-index: 1;
+	}
+
+	#lovable-badge-close svg path {
+		fill: var(--badge-text);
+		transition: fill var(--badge-transition-duration) ease;
+	}
+
+	#lovable-badge-close:hover svg path {
+		fill: var(--badge-text-hover);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#lovable-badge-cta,
+		#lovable-badge-close,
+		#lovable-badge-close svg path {
+			transition: none;
+		}
+		
+		#lovable-badge-cta:active,
+		#lovable-badge-close:active {
+			transform: none;
+		}
+	}
+
+	@media (prefers-contrast: high) {
+		#lovable-badge {
+			--badge-bg: #000;
+			--badge-text: #fff;
+			--badge-text-hover: #fff;
+			border: 2px solid currentColor;
+		}
+		
+		#lovable-badge-cta:focus-visible,
+		#lovable-badge-close:focus-visible {
+			outline-width: 3px;
+		}
+	}
+</style>
+<script defer src="https://sublime-display-studio.lovable.app/~flock.js" data-proxy-url="https://sublime-display-studio.lovable.app/~api/analytics"></script></head>
+  <body>
+    <div id="root"></div>
+  
+<aside 
+	id="lovable-badge" 
+	role="complementary"
+	dir="ltr"
+	lang="en"
+	aria-label="Edit with Lovable">
+	<a 
+		id="lovable-badge-cta" 
+		target="_blank" 
+		href="https://lovable.dev/projects/7ab6c549-13d8-4b51-852a-88803690c4ef?utm_source=lovable-badge"
+		rel="noopener"
+		aria-label="Edit with Lovable">
+		<span id="lovable-badge-text">Edit with</span>
+		<svg xmlns="http://www.w3.org/2000/svg" width="52" height="16" fill="none" viewBox="0 0 52 16">
+  <path fill="#FCFBF8" fill-rule="evenodd" d="M20.318 5.25c.643 0 1.206.14 1.69.418a2.81 2.81 0 0 1 1.118 1.191c.266.513.4 1.115.4 1.807s-.134 1.296-.4 1.812a2.81 2.81 0 0 1-1.118 1.193c-.484.278-1.047.418-1.69.418s-1.208-.14-1.695-.418a2.85 2.85 0 0 1-1.125-1.193c-.262-.516-.393-1.12-.393-1.812s.131-1.294.393-1.807a2.848 2.848 0 0 1 1.125-1.191c.487-.279 1.052-.418 1.695-.418Zm0 1.425c-.27 0-.504.076-.7.228-.193.147-.34.37-.443.67-.102.295-.153.66-.153 1.093 0 .435.05.801.153 1.1.102.3.25.524.443.676.196.147.43.22.7.22.27 0 .502-.073.694-.22.193-.152.341-.375.443-.67.103-.299.153-.667.153-1.106 0-.65-.112-1.145-.337-1.481a1.08 1.08 0 0 0-.953-.51ZM32.7 5.25c.61 0 1.127.1 1.549.3.422.197.74.48.953.849.217.368.325.809.325 1.32v2.704c0 .29.02.562.062.812.044.245.108.4.19.466V12h-1.935a5.895 5.895 0 0 1-.105-.684 7.745 7.745 0 0 1-.02-.228 2.293 2.293 0 0 1-.151.203c-.205.242-.47.437-.793.584-.32.143-.685.215-1.094.215-.406 0-.77-.08-1.094-.24a1.845 1.845 0 0 1-.756-.682 1.984 1.984 0 0 1-.27-1.045c0-.606.178-1.069.535-1.388.356-.324.87-.534 1.542-.633l1.125-.16c.225-.032.403-.074.534-.123a.622.622 0 0 0 .288-.196.549.549 0 0 0 .093-.327.65.65 0 0 0-.11-.367.702.702 0 0 0-.32-.27c-.14-.07-.31-.105-.51-.105-.32 0-.576.083-.768.251-.193.164-.298.39-.314.676h-1.923c.016-.434.147-.82.393-1.155.25-.34.596-.604 1.039-.792.442-.189.954-.283 1.535-.283Zm.99 3.498a.98.98 0 0 1-.215.14 2.49 2.49 0 0 1-.584.178l-.473.092c-.315.061-.553.156-.713.283-.155.127-.233.305-.233.534 0 .23.084.412.252.547.168.135.383.203.645.203s.494-.058.694-.173c.201-.118.355-.282.461-.49.11-.21.166-.448.166-.714v-.6Zm4.526-2.375c.065-.125.138-.243.221-.349.197-.25.437-.44.719-.571.282-.135.6-.203.952-.203.528 0 .988.138 1.377.412.389.275.688.67.896 1.186.21.512.314 1.12.314 1.824 0 .7-.107 1.309-.32 1.825-.213.512-.518.906-.915 1.18-.393.275-.854.412-1.383.412-.352 0-.667-.062-.946-.184a1.832 1.832 0 0 1-.7-.554 2.2 2.2 0 0 1-.234-.383V12h-1.843V3h1.862v3.373Zm1.284.296c-.274 0-.51.085-.707.253-.192.163-.338.397-.436.7a3.376 3.376 0 0 0-.148 1.05c0 .406.05.759.148 1.058.098.299.243.53.436.694.197.164.433.246.707.246.279 0 .512-.082.7-.246.193-.164.336-.395.43-.694.099-.3.148-.652.148-1.058 0-.405-.05-.757-.147-1.056-.095-.299-.238-.53-.43-.694a1.015 1.015 0 0 0-.7-.253Zm9.416-1.419c.602 0 1.136.131 1.604.393.466.262.829.643 1.086 1.143.263.5.394 1.097.394 1.794 0 .25-.002.449-.006.596H47.51c.018.288.071.538.164.75a1.3 1.3 0 0 0 .491.596c.214.13.465.196.757.196.319 0 .583-.082.792-.246.209-.167.34-.403.393-.706h1.862a2.48 2.48 0 0 1-.485 1.235 2.54 2.54 0 0 1-1.051.805c-.439.188-.949.283-1.53.283-.655 0-1.225-.125-1.708-.375a2.672 2.672 0 0 1-1.13-1.143c-.267-.508-.4-1.137-.4-1.887 0-.712.14-1.327.418-1.843a2.86 2.86 0 0 1 1.155-1.186c.491-.27 1.051-.405 1.678-.405Zm-.044 1.345c-.274 0-.516.068-.725.203a1.29 1.29 0 0 0-.479.59 2.045 2.045 0 0 0-.132.498h2.562a1.873 1.873 0 0 0-.138-.602 1.061 1.061 0 0 0-.418-.516 1.243 1.243 0 0 0-.67-.173Z" clip-rule="evenodd"/>
+  <path fill="#FCFBF8" d="m26.605 9.995 1.342-4.566h1.924L27.628 12h-2.07l-2.33-6.57h1.98l1.397 4.565Zm-13.013.143h2.256c1.632 0 1.421 1.837 1.418 1.861h-5.603V3h1.93v7.138Zm31.516 1.861h-1.862V3h1.862v8.999Z"/>
+  <path fill="url(#a)" fill-rule="evenodd" d="M2.7 3c1.492 0 2.7 1.192 2.7 2.663v1.012h.9c1.49 0 2.7 1.192 2.7 2.662S7.791 12 6.3 12H0V5.663C0 4.193 1.209 3 2.7 3Z" clip-rule="evenodd"/>
+  <defs>
+    <radialGradient id="a" cx="0" cy="0" r="1" gradientTransform="matrix(-1.54236 7.07838 -10.231 -2.15602 4.627 5.022)" gradientUnits="userSpaceOnUse">
+      <stop offset=".106" stop-color="#FE7B02"/>
+      <stop offset=".394" stop-color="#FE3F21"/>
+      <stop offset=".608" stop-color="#F858BC"/>
+      <stop offset=".929" stop-color="#575ECF"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+
+	</a>
+	
+	<span id="lovable-badge-divider" aria-hidden="true"></span>
+	
+	<button 
+		id="lovable-badge-close"
+		aria-label="Dismiss"
+		title="Dismiss"
+		type="button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true">
+			<path d="M10.646 4.646a.5.5 0 1 1 .707.708L8.707 8l2.646 2.646a.5.5 0 1 1-.707.707L8 8.707l-2.646 2.646a.5.5 0 1 1-.708-.707L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708L8 7.293l2.646-2.647Z"/>
+		</svg>
+	</button>
+</aside>
+<script>
+	// Don't show the lovable-badge if the page is in an iframe or if it's being rendered by puppeteer (screenshot service)
+	if (window.self !== window.top || navigator.userAgent.includes('puppeteer')) {
+		// the page is in an iframe
+		var badge = document.getElementById('lovable-badge');
+		if (badge) {
+			badge.style.display = 'none';
+		}
+	}
+
+	// Add click event listener to close button with animation
+	var closeButton = document.getElementById('lovable-badge-close');
+	if (closeButton) {
+		closeButton.addEventListener('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var badge = document.getElementById('lovable-badge');
+			if (badge) {
+				badge.classList.add('closing');
+				setTimeout(function() {
+					if (badge) {
+						badge.style.display = 'none';
+					}
+				}, 240);
+			}
+		});
+	}
+</script>
+</body>
+</html>
